@@ -40,21 +40,21 @@ domains$ranges<-paste0(domains$chr,":",
 
 
 chrom.sizes<-domains[domains$domain=="Left",]
-write.table(cbind(chrom.sizes$domainName, chrom.sizes$pseudoEnd),
+write.table(cbind(chrom.sizes$chromosome, chrom.sizes$pseudoEnd),
             file="left.chrom.sizes",quote=F,sep="\t",row.names=F,col.names=F)
-write.table(cbind(chrom.sizes$ranges, chrom.sizes$domainName, chrom.sizes$roundedStart),
+write.table(cbind(chrom.sizes$ranges, chrom.sizes$chromosome, chrom.sizes$roundedStart),
             file="left.chrom.ranges", quote=F, sep="\t", row.names=F, col.names=F)
 
 
 chrom.sizes<-domains[domains$domain=="Right",]
-write.table(cbind(chrom.sizes$domainName, chrom.sizes$pseudoEnd),
+write.table(cbind(chrom.sizes$chromosome, chrom.sizes$pseudoEnd),
             file="right.chrom.sizes",quote=F,sep="\t",row.names=F,col.names=F)
-write.table(cbind(chrom.sizes$ranges, chrom.sizes$domainName, chrom.sizes$roundedStart),
+write.table(cbind(chrom.sizes$ranges, chrom.sizes$chromosome, chrom.sizes$roundedStart),
             file="right.chrom.ranges", quote=F, sep="\t", row.names=F, col.names=F)
 
 chrom.sizes<-domains[domains$domain=="Center",]
-write.table(cbind(chrom.sizes$domainName, chrom.sizes$pseudoEnd),
+write.table(cbind(chrom.sizes$chromosome, chrom.sizes$pseudoEnd),
             file="center.chrom.sizes",quote=F,sep="\t", row.names=F, col.names=F)
-write.table(cbind(chrom.sizes$ranges, chrom.sizes$domainName, chrom.sizes$roundedStart),
+write.table(cbind(chrom.sizes$ranges, chrom.sizes$chromosome, chrom.sizes$roundedStart),
             file="center.chrom.ranges", quote=F, sep="\t", row.names=F, col.names=F)
 

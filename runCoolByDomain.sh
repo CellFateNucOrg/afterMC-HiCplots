@@ -18,7 +18,9 @@ domains=( left center right )
 binSize=50000
 
 baseFileName=`basename ${coolFile}`
-baseFileName=${baseFileName%.${binSize}.cool}
+#fix name
+baseFileName=${baseFileName%5kb.${binSize}.cool}50kb
+echo "base file name: " $baseFileName
 
 chrDomainDIR=${workDIR}/chrDomain
 mkdir -p chrDomain
@@ -40,44 +42,42 @@ do
   for i in $(seq 0 $maxIndex)
   do
 
-    echo "${pseudoChr[$i]} starting"
-    cooler dump -r ${ranges[$i]} --join ${coolFile} --one-based-starts -o  ${chrDomainDIR}/${baseFileName}_${pseudoChr[$i]}_tmp.bg2
+    echo "${pseudoChr[$i]} ${domain} starting"
+    cooler dump -r ${ranges[$i]} --join ${coolFile} --one-based-starts -o  ${chrDomainDIR}/${baseFileName}_${pseudoChr[$i]}_${domain}_tmp.bg2
 
-    echo "${pseudoChr[$i]} dumped"
+    echo "${pseudoChr[$i]} ${domain} dumped"
 
-    awk -F'\t' 'BEGIN {OFS=FS} {$1='${pseudoChr[$i]}'} {$4='${pseudoChr[$i]}'} {print}'  ${chrDomainDIR}/${baseFileName}_${pseudoChr[$i]}_tmp.bg2  >  ${chrDomainDIR}/${baseFileName}_${pseudoChr[$i]}.bg2
+    #awk -F'\t' 'BEGIN {OFS=FS} {$1='${pseudoChr[$i]}'} {$4='${pseudoChr[$i]}'} {print}'  ${chrDomainDIR}/${baseFileName}_${pseudoChr[$i]}_tmp.bg2  >  ${chrDomainDIR}/${baseFileName}_${pseudoChr[$i]}.bg2
 
-    awk -F'\t' -v chr=${pseudoChr[$i]} -v start=${roundedStart[$i]} 'BEGIN {OFS=FS} {$1=chr} {$2=$2-start} {$3=$3-start} {$4=chr} {$5=$5-start} {$6=$6-start} {print}'  ${chrDomainDIR}/${baseFileName}_${pseudoChr[$i]}_tmp.bg2  >  ${chrDomainDIR}/${baseFileName}_${pseudoChr[$i]}.bg2
+    awk -F'\t' -v chr=${pseudoChr[$i]} -v start=${roundedStart[$i]} 'BEGIN {OFS=FS} {$1=chr} {$2=$2-start} {$3=$3-start} {$4=chr} {$5=$5-start} {$6=$6-start} {print}'  ${chrDomainDIR}/${baseFileName}_${pseudoChr[$i]}_${domain}_tmp.bg2  >  ${chrDomainDIR}/${baseFileName}_${pseudoChr[$i]}_${domain}.bg2
 
 
-    echo "${pseudoChr[$i]} finished"
-    cat  ${chrDomainDIR}/${baseFileName}_${pseudoChr[$i]}.bg2 >>  ${chrDomainDIR}/${baseFileName}_${domain}Arm.bg2
+    echo "${pseudoChr[$i]} ${domain} finished"
+    cat  ${chrDomainDIR}/${baseFileName}_${pseudoChr[$i]}_${domain}.bg2 >>  ${chrDomainDIR}/${baseFileName}_${domain}Arm.bg2
 
   done
 
-  #rm  ${chrDomainDIR}/${baseFileName}_chr*_*.bg2
+  rm  ${chrDomainDIR}/${baseFileName}_chr*_${domain}*.bg2
 
   cooler load -f bg2 ${workDIR}/${domain}.chrom.sizes:50000 ${chrDomainDIR}/${baseFileName}_${domain}Arm.bg2 ${chrDomainDIR}/${baseFileName}_${domain}Arm.cool
 
 done
 
 
+coolFiles=(`ls ${chrDomainDIR}/${baseFileName}_*Arm.cool`)
+chrNames=( chrI chrII chrIII chrIV chrV chrX )
 
+  ################
+  # do decay plots
+  #################
+  # plotted per chr
+  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile decayPlots/DistVsCounts_${baseFileName}_domains_perChr.pdf --perchr --skipDiagonal --maxdepth 20000000 --plotsize 6 5 --labels "center" "left" "right"
 
+  # plotted all chr together
+  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile decayPlots/DistVsCounts_${baseFileName}_domains.pdf --skipDiagonal --maxdepth 20000000 --plotsize 6 5 --labels "center" "left" "right"
 
+  # autosomes only
+  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile decayPlots/DistVsCounts_${baseFileName}_domains_autosomes.pdf --skipDiagonal --maxdepth 20000000 --chromosomeExclude chrX --plotsize 6 5 --labels "center" "left" "right"
 
-
-coolFiles=(`ls hic_mats/*5000.cool`)
-COOLER_RESOLUTIONS=5000,10000,20000,50000,100000,200000,500000
-
-
-mkdir -p mcool
-
-for coolFile in ${coolFiles[@]} 
-do
-	fileName=`basename $coolFile`
-	mv $coolFile mcool/$fileName
-	#mcoolFile=mcool/${fileName%cool}mcool
-	cooler zoomify 	-n 4 -c 10000000 -r $COOLER_RESOLUTIONS mcool/$fileName
-done
-
+  # Xchr only
+  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile decayPlots/DistVsCounts_${baseFileName}_domains_Xchr.pdf --skipDiagonal --maxdepth 20000000 --chromosomeExclude chrI chrII chrIII chrIV chrV --plotsize 6 5 --labels "center" "left" "right"
