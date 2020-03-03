@@ -52,19 +52,19 @@ do
   # do decay plots by domain
   #################
   
-  coolFiles=( /home/mdas/combine_TEVneg_HIC_8_12.8/chrDomain/combine_TEVneg_HIC_8_12.8_bw50kb_${domain}Arm.cool /home/mdas/combine_TEVpos_HIC_10_12.5_13/chrDomain/combine_TEVpos_HIC_10_12.5_13_bw50kb_${domain}Arm.cool )   
+  coolFiles=( /home/mdas/combine_HIC_3_6_7/chrDomain/combine_HIC_3_6_7_bw50kb_${domain}Arm.cool  /home/mdas/combine_TEVneg_HIC_8_12.8/chrDomain/combine_TEVneg_HIC_8_12.8_bw50kb_${domain}Arm.cool /home/mdas/combine_TEVpos_HIC_10_12.5_13/chrDomain/combine_TEVpos_HIC_10_12.5_13_bw50kb_${domain}Arm.cool )   
 
   # plotted per chr
-  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile ${decayDIR}/DistVsCounts_TEVposTEVneg_${domain}Arm_perChr.pdf --perchr --skipDiagonal --maxdepth 20000000 --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
+  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile ${decayDIR}/DistVsCounts_wtTEVposTEVneg_${domain}Arm_perChr.pdf --perchr --skipDiagonal --maxdepth 20000000 --plotsize 6 5 --labels "wt" "TEVcs-" "TEVcs+"
 
   # plotted all chr together
-  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile ${decayDIR}/DistVsCounts_TEVposTEVneg_${domain}Arm.pdf --skipDiagonal --maxdepth 20000000 --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
+  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile ${decayDIR}/DistVsCounts_wtTEVposTEVneg_${domain}Arm.pdf --skipDiagonal --maxdepth 20000000 --plotsize 6 5 --labels "wt" "TEVcs-" "TEVcs+"
 
   # autosomes only
-  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile ${decayDIR}/DistVsCounts_TEVposTEVneg_${domain}Arm_autosomes.pdf --skipDiagonal --maxdepth 20000000 --chromosomeExclude chrX --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
+  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile ${decayDIR}/DistVsCounts_wtTEVposTEVneg_${domain}Arm_autosomes.pdf --skipDiagonal --maxdepth 20000000 --chromosomeExclude chrX --plotsize 6 5 --labels "wt" "TEVcs-" "TEVcs+"
 
   # Xchr only
-  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile ${decayDIR}/DistVsCounts_TEVposTEVneg_${domain}Arm_Xchr.pdf --skipDiagonal --maxdepth 20000000 --chromosomeExclude chrI chrII chrIII chrIV chrV --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
+  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile ${decayDIR}/DistVsCounts_wtTEVposTEVneg_${domain}Arm_Xchr.pdf --skipDiagonal --maxdepth 20000000 --chromosomeExclude chrI chrII chrIII chrIV chrV --plotsize 6 5 --labels "wt" "TEVcs-" "TEVcs+"
 
 done
 

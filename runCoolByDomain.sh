@@ -14,7 +14,7 @@ echo "conda activate is: " ${CONDA_ACTIVATE}
 
 workDIR=..
 scriptDIR=.
-coolFile=${workDIR}/mcool/combine_TEVpos_HIC_10_12.5_13_bw5kb.50000.cool
+coolFile=${workDIR}/mcool/combine_HIC_3_6_7_bw5kb.50000.cool
 domains=( left center right )
 binSize=50000
 
