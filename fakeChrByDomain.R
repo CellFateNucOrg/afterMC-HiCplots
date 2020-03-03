@@ -36,7 +36,7 @@ domains$chr<-as.factor(domains$chromosome)
 levels(domains$chr)<-1:6
 domains$ranges<-paste0(domains$chr,":",
                        apply(cbind(domains$roundedStart,domains$start),1,max),"-",
-                       apply(cbind(domains$roundedEnd, domains$end),1,min))
+                       apply(cbind(domains$roundedEnd, floor(domains$end/binSize)*binSize),1,min))
 
 
 chrom.sizes<-domains[domains$domain=="Left",]

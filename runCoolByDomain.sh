@@ -12,7 +12,7 @@
 source ${CONDA_ACTIVATE} MC-HiC-env
 echo "conda activate is: " ${CONDA_ACTIVATE}
 
-workDIR=./
+workDIR=.
 coolFile=${workDIR}/mcool/combine_TEVneg_HIC_8_12.8_bw5kb.50000.cool
 domains=( left center right )
 binSize=50000
@@ -54,13 +54,12 @@ do
     cat  ${chrDomainDIR}/${baseFileName}_${pseudoChr[$i]}.bg2 >>  ${chrDomainDIR}/${baseFileName}_${domain}Arm.bg2
 
   done
+
+  #rm  ${chrDomainDIR}/${baseFileName}_chr*_*.bg2
+
+  cooler load -f bg2 ${workDIR}/${domain}.chrom.sizes:50000 ${chrDomainDIR}/${baseFileName}_${domain}Arm.bg2 ${chrDomainDIR}/${baseFileName}_${domain}Arm.cool
+
 done
-
-#rm  ${chrDomainDIR}/${baseFileName}_chr*_*.bg2
-
-cooler load -f bg2 ${workDIR}/${domain}.chrom.sizes:50000 ${chrDomainDIR}/${baseFileName}_${domain}Arm.bg2 ${chrDomainDIR}/${baseFileName}_${domain}Arm.cool
-
-
 
 
 
