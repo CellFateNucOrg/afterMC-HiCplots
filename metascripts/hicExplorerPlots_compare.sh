@@ -11,70 +11,62 @@
 
 source ${CONDA_ACTIVATE} MC-HiC-env
 
+#"$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && cd ../../ && pwd )"
+workDIR=${HOME}
+scriptDIR=.
+decayDIR=${workDIR}/decayPlots_compare
+
 chromosomes=( 1 2 3 4 5 6 )
 chrNames=( chrI chrII chrIII chrIV chrV chrX )
-resolutions=( 5000 10000 20000 50000 100000 200000 500000 )
+#resolutions=( 5000 10000 20000 50000 100000 200000 500000 )
 
-h5Files=( combine_TEVneg_HIC_8_12.8/h5_files/combine_TEVneg_HIC_8_12.8_bw5kb.50000.h5 combine_TEVpos_HIC_10_12.5_13/h5_files/combine_TEVpos_HIC_10_12.5_13_bw5kb.50000.h5 )
+h5Files=( ${workDIR}/combine_TEVneg_HIC_8_12.8/h5_files/combine_TEVneg_HIC_8_12.8_bw5kb.50000.h5 ${workDIR}/combine_TEVpos_HIC_10_12.5_13/h5_files/combine_TEVpos_HIC_10_12.5_13_bw5kb.50000.h5 )
+
+mkdir -p ${decayDIR}
 
 echo ${h5Files[@]}
 
 resolution=50000
-#for resolution in ${resolutions[@]}
-#do
-#  ##resolution=5000
-#  ##prettyRes=`expr ${resolution} / 1000`
-#  ##prettyRes=`echo res${prettyRes}kb`
-#  coolFiles=(`ls mcool/*.${resolution}.cool | grep -v "_seq" | grep -v "_z"`)
-#  
-#  ##coolFile="/Users/semple/IdeaProjects/hicExplorerPlots/hic_mats/HiCmat_20191026_HIC13_noBC_pass_bw10kb_mf50_ice.10000.cool"
-#  ##baseName="20191026_HIC13_noBC_pass_bw10kb_mf50_ice"
-#  
-#  mkdir -p h5_files
-#  mkdir -p decayPlots
-#  mkdir -p eigenVectors
-#  mkdir -p loops
-#  
-#  echo $SLURM_ARRAY_TASK_ID "is slurm task id"
-#  let i=$SLURM_ARRAY_TASK_ID-1
-#  coolFile=${coolFiles[$i]}
-#  
-#  echo $coolFile
-#  
-#  ###############
-#  # convert cool to h5 (not necessary?)
-#  ###############
-#  coolFileName=`basename ${coolFile}`
-#  baseName=${coolFileName%.${resolution}.cool}
-#  baseName=${baseName#HiCmat_}
-#  baseName=`sed -nr 's/(.*)_noBC_pass(.*)_mf50(.*)/\1\2\3/p' <<< "$baseName"`
-#  echo $baseName " is basename"
-#  
-#  coolPath=`dirname ${coolFile}`
-#  
-#  hicInfo -m $coolFile #--outFileName
-#  
-#  h5FileName=${coolFileName%cool}h5
-#  h5Path=${coolPath%mcool}h5_files
-#  
-#  h5File=${h5Path}/${h5FileName}
-#  
-#  hicConvertFormat -m $coolFile --inputFormat cool --outputFormat h5 -o $h5File
+
+################
+# do decay plots
+#################
+# plotted per chr
+hicPlotDistVsCounts --matrices ${h5Files[@]} --plotFile ${decayDIR}/DistVsCounts_TEVposTEVneg_perChr.pdf --perchr --skipDiagonal --maxdepth 20000000 --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
+
+# plotted all chr together
+hicPlotDistVsCounts --matrices ${h5Files[@]} --plotFile ${decayDIR}/DistVsCounts_TEVposTEVneg.pdf --skipDiagonal --maxdepth 20000000 --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
+
+# autosomes only
+hicPlotDistVsCounts --matrices ${h5Files[@]} --plotFile ${decayDIR}/DistVsCounts_TEVposTEVneg_autosomes.pdf --skipDiagonal --maxdepth 20000000 --chromosomeExclude 6 --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
+
+# Xchr only
+hicPlotDistVsCounts --matrices ${h5Files[@]} --plotFile ${decayDIR}/DistVsCounts_TEVposTEVneg_Xchr.pdf --skipDiagonal --maxdepth 20000000 --chromosomeExclude 1 2 3 4 5 --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
+
+
+domains=( left center right )
+for domain in ${domains[@]}
+do
   
   ################
-  # do decay plots
+  # do decay plots by domain
   #################
+  
+  coolFiles=( /home/mdas/combine_TEVneg_HIC_8_12.8/chrDomain/combine_TEVneg_HIC_8_12.8_bw50kb_${domain}Arm.cool /home/mdas/combine_TEVpos_HIC_10_12.5_13/chrDomain/combine_TEVpos_HIC_10_12.5_13_bw50kb_${domain}Arm.cool )   
+
   # plotted per chr
-  hicPlotDistVsCounts --matrices ${h5Files[@]} --plotFile decayPlots/DistVsCounts_TEVposTEVneg_perChr.pdf --perchr --skipDiagonal --maxdepth 20000000 --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
+  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile ${decayDIR}/DistVsCounts_TEVposTEVneg_${domain}Arm_perChr.pdf --perchr --skipDiagonal --maxdepth 20000000 --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
 
   # plotted all chr together
-  hicPlotDistVsCounts --matrices ${h5Files[@]} --plotFile decayPlots/DistVsCounts_TEVposTEVneg.pdf --skipDiagonal --maxdepth 20000000 --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
+  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile ${decayDIR}/DistVsCounts_TEVposTEVneg_${domain}Arm.pdf --skipDiagonal --maxdepth 20000000 --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
 
   # autosomes only
-  hicPlotDistVsCounts --matrices ${h5Files[@]} --plotFile decayPlots/DistVsCounts_TEVposTEVneg_autosomes.pdf --skipDiagonal --maxdepth 20000000 --chromosomeExclude 6 --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
+  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile ${decayDIR}/DistVsCounts_TEVposTEVneg_${domain}Arm_autosomes.pdf --skipDiagonal --maxdepth 20000000 --chromosomeExclude chrX --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
 
- # Xchr only
-    hicPlotDistVsCounts --matrices ${h5Files[@]} --plotFile decayPlots/DistVsCounts_TEVposTEVneg_Xchr.pdf --skipDiagonal --maxdepth 20000000 --chromosomeExclude 1 2 3 4 5 --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
+  # Xchr only
+  hicPlotDistVsCounts --matrices ${coolFiles[@]} --plotFile ${decayDIR}/DistVsCounts_TEVposTEVneg_${domain}Arm_Xchr.pdf --skipDiagonal --maxdepth 20000000 --chromosomeExclude chrI chrII chrIII chrIV chrV --plotsize 6 5 --labels "TEVcs-" "TEVcs+"
+
+done
 
 #  distance=2000000
 #  prettyDist=`expr $distance / 1000000`
