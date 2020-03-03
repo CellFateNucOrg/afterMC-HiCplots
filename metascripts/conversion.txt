@@ -1,0 +1,6 @@
+1	chrI
+2	chrII
+3	chrIII
+4	chrIV
+5	chrV
+6	chrX
