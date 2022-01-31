@@ -1,0 +1,104 @@
+---
+title: "Analysis_report"
+author: "Jennifer Semple"
+date: "10/29/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Custom plots for nanoHIC
+Results of mapping are read in from hdf5 file in frag_files folder using the script js_plotHDF5. Many stats along the way are saved into the important_stats list. This document describes them a bit. 
+
+
+```{r}
+sampleName<-"20190501_HIC6_7_barcode08_pass"
+importantStats<-readRDS(paste0("./rds/importantStats_",sampleName,".rds"))
+```
+
+## Total read and fragment numbers
+
+_TotalReadsSequenced_ and _TotalFragsSequenced_ refer to the highest read and fragment number that were assigned by th MC-HiC-guppy pipeline when processing the fastq reads and giving the sequential numbers as IDs. After mapping the total number of reads/frags goes down considerably. 
+
+_TotalMappedReads_ and _TotalMappedFragments_ refer to the number of reads and fragments in the hdf5 file. all these reads have a MQ>0 (i.e. they are mapped).
+
+```{r}
+format(importantStats$TotalReadsSequenced,big.mark=",")
+format(importantStats$TotalFragsSequenced,big.mark=",")
+format(importantStats$TotalMappedReads,big.mark=",")
+format(importantStats$TotalMappedFrags,big.mark=",")
+```
+
+## Filtering of reads
+The hdf5 table contains also reads mapped to multiple locations. 
+
+_uniquelyMappedFrags_ refers to the number of fragments mapped uniquely in the genome (occur only once in the hdf5 file). These reads were given a uniqueMapping score of 1. 
+
+_multiMappedFrags_ refers to the number of fragments that have 2 or more occurrences in the genome. The multiMappedFrags were given a uniqueMapping score of 0. They were filtered to keep the one with the best mapping score for any given fragment.
+
+_ambigMappedFrags_ counts the number of fragments where more than one alignment had the same top mapping score, these were considered ambiguous mappings (many of these had a low MQ, but some had a MQ as high as 250). Finally the reads were filtered to remove any mtDNA fragments, as there cannot be real physical interactions. 
+
+_bestUniqMappedFrag_ gives the count of all singly mapped reads and multimapped reads for which a top-mapping-score fragment could be identified. Histogram and plots of the MQ of these fragments and reads are in **mappingQuality_bestUniqMapped.pdf**
+
+_trueHops_ exclude all fragments that are in tandem and closer than 500bp (or whatever threshold the pipeline puts).
+
+_trueHops_MQgt20_ include only true hops that also have a mapping quality 20 or higher. These are the fragments that are used for generating the HiC matrix in the MC-HiC pipeline. These are saved in the ./rds/bestUniqMapped_sampleName.rds file.
+
+```{r}
+format(importantStats$uniquelyMappedFrags,big.mark=",")
+format(importantStats$multiMappedFrags,big.mark=",")
+format(importantStats$ambigMappedFrags,big.mark=",")
+format(importantStats$bestUniqMappedFrags,big.mark=",")
+format(importantStats$trueHops,big.mark=",")
+format(importantStats$trueHops_MQgt20,big.mark=",")
+```
+
+Minimum, maximum and median read and fragment lengths are also recorded for bestUniqMapped
+````{r}
+importantStats["medianReadLength"]
+importantStats["medianFragLength"]
+importantStats["minReadLength"]
+importantStats["minFragLength"]
+importantStats["maxReadLength"]
+importantStats["maxFragLength"]
+```
+
+## Summarising data per read
+Data is grouped by read ID and then number of fragments and number/fraction of multi fragment reads are calculated. This is performed for all reads (bestUniqMapped), for all fragments with MQ>=20, and for all reads with MQ>=20 that are also true hops.
+```{r}
+importantStats["maxFragPerRead_bestUniqMapped"]
+importantStats["FractionMultiFragReads_bestUniqMapped"]
+importantStats["maxFragPerRead_MQ>=20"]
+importantStats["FractionMultiFragReads_MQ>=20"]
+importantStats["maxFragPerRead_TrueHop"]
+importantStats["FractionMultiFragReads_TrueHop"]
+```
+
+## Summarising data about mtDNA
+Mitochondrial DNA should have no 3D contact with nuclear DNA, therefore it serves as an internal control.
+
+### Are mtDNA over or under respresented?
+Ideally there would be no mtDNA fragments in the read. But one certainly should hope that they are under-represnted compared to nuclear fragments. To calculate that we can compare to the relative size of the mtDNA (13794bp) to the whole genome (100Mb)
+```{r}
+importantStats$numFragsMtDNA
+importantStats$percentFragsMtDNA
+# Note: MtDNA size is 13794 bp
+importantStats$percentGenomeMtDNA
+```
+
+
+We can do the same calculation at the read level
+```{r}
+importantStats$numAllReads
+importantStats$numReadsMtDNA
+importantStats$percentReadsWithMtDNA
+```
+
+But actually what most worries use are reads that have fragments from both nuclear and mitochondrial genomes:
+```{r}
+importantStats$numMixedReadsMtDNA
+importantStats$percentMixedReadsWithMtDNA
+```
+

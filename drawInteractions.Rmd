@@ -1,0 +1,87 @@
+---
+title: "drawInteractions"
+author: "Jennifer Semple"
+date: "3/4/2020"
+output: pdf_document
+---
+
+```{r setup, echo=FALSE, message=FALSE}
+require(knitr)
+#turn off mesages and warnings and make it so output isn't prefixed by anything,
+#default is to put "##" in front of all output for some reason
+#also set tidy to true so code is wrapped properly 
+opts_chunk$set(message=FALSE, warning=FALSE, comment = "", cache = F)
+options(width = 200)
+```
+
+```{js}
+function addSvgSaveButtonJquery(buttonId, topSvg) {
+  $(buttonId).append("<a id=imgDownload></a>")
+  $(buttonId).click(function() {
+    var html = $(
+    $(topSvg).attr("version", 1.1)
+             .attr("xmlns","http://www.w3.org/2000/svg")).clone()
+      .wrap('<p/>').parent().html();
+    // add the svg information to a and then click it to trigger the
+    // download
+    var imgsrc = 'data:image/svg+xml;base64,' + btoa(html);
+    $(buttonId + " #imgDownload").attr("download", "graph.svg");
+    $(buttonId + " #imgDownload").attr("href", imgsrc);
+    var a = $(buttonId + " #imgDownload")[0];
+    a.click();
+  });
+}
+```
+
+
+# Plot bioCircos plots for multi fragment reads
+```{r,fig.width=10, fig.height=10}
+library(BioCircos)
+library(BSgenome.Celegans.UCSC.ce11)
+
+sampleName="20190501_HIC6_7_barcode08_pass"
+multiFrag<-readRDS(paste0("./rds/multiMapped_",sampleName,".rds"))
+Chrnames<-c("chrI","chrII","chrIII","chrIV","chrV","chrX","MtDNA") # used to get rid of mtDNA
+ce11 <- list( "chrI" = 15072434,
+              "chrII" = 15279421,
+              "chrIII" = 13783801,
+              "chrIV" = 17493829,
+              "chrV" = 20924180,
+              "chrX" = 17718942,
+              "MtDNA" = 13794)
+gt4<-multiFrag[multiFrag$numFrags==4,]
+
+gt4$Chr<-Chrnames[gt4$Chr]
+
+set.seed(2020)
+readsToDraw<-sample(unique(gt4$ReadID),1)
+
+rd=117
+  currentRead<-gt4[gt4$ReadID==rd,]
+  links_firstChr<-currentRead$Chr[1:3]
+  links_secondChr<-currentRead$Chr[2:4]
+  links_pos_firstChr<-currentRead$RefStart[1:3]
+  links_pos_secondChr<-currentRead$RefEnd[2:4]
+  tracklist = BioCircosBackgroundTrack("myBackgroundTrack", minRadius = 0, maxRadius = 0.9,
+                                       borderSize = 0, fillColors = "#EEFFEE")
+
+  tracklist = tracklist + BioCircosLinkTrack('myLinkTrack',
+                                             links_firstChr,links_pos_firstChr,
+                                             links_pos_firstChr,
+                                             links_secondChr, links_pos_secondChr,
+                                              links_pos_secondChr,
+                                             maxRadius = 0.9)
+
+  BioCircos(genome=ce11, tracklist, genomeFillColor = "PuOr",
+            chrPad = 0.02, displayGenomeBorder = FALSE,
+            genomeTicksDisplay = FALSE,  genomeLabelTextSize = "22pt", 
+            genomeLabelDy = 0, elementId="bcplot")
+
+```
+
+```{js}
+$("#bcplot").append("<button id=save_svg2>Save As Svg</button>");
+//Give the selectors for button and svg element to download
+addSvgSaveButtonJquery("#save_svg2", "#bcplot svg");
+```
+
